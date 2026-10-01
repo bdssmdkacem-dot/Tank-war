@@ -10,12 +10,16 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
+import android.webkit.WebChromeClient;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
+    private TextView status;
+    private WebView view;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -25,10 +29,22 @@ public class MainActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(45, 127, 43));
 
-        WebView view = new WebView(this);
-        view.setBackgroundColor(Color.WHITE);
+        view = new WebView(this);
+        view.setBackgroundColor(Color.rgb(45, 127, 43));
+        view.setWebChromeClient(new WebChromeClient());
+        view.addJavascriptInterface(new Object() {
+            @JavascriptInterface public void ready() {
+                runOnUiThread(() -> status.setVisibility(android.view.View.GONE));
+            }
+            @JavascriptInterface public void error(String message) {
+                runOnUiThread(() -> {
+                    status.setVisibility(android.view.View.VISIBLE);
+                    status.setText("TANK WAR JS ERROR\\n" + message);
+                });
+            }
+        }, "TankBridge");
 
-        final TextView status = new TextView(this);
+        final status = new TextView(this);
         status.setText("TANK WAR\nLoading game HTML…");
         status.setTextColor(Color.WHITE);
         status.setTextSize(17);
@@ -40,7 +56,7 @@ public class MainActivity extends Activity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setAllowFileAccess(true);
-        s.setAllowContentAccess(true);
+        s.setAllowContentAccess(true);\n        s.setLoadWithOverviewMode(true);\n        s.setUseWideViewPort(true);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
         s.setMediaPlaybackRequiresUserGesture(false);
 
