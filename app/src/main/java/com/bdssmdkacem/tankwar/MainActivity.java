@@ -80,8 +80,7 @@ public class MainActivity extends Activity {
                         "(function(){return JSON.stringify({ready:document.readyState,canvas:!!document.getElementById('c'),tankReady:!!window.__tankWarReady,w:innerWidth,h:innerHeight});})()",
                         value -> {
                             if (value != null) {
-                                String s = value.replace("\\"", """);
-                                status.setText("TANK WAR  |  " + s);
+                                status.setText("TANK WAR  |  JS STATE: " + value);
                             }
                         }
                 ), 800);
