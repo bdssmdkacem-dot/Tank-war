@@ -26,15 +26,16 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Prepare web game asset
+      - name: Prepare web game assets
         run: |
           mkdir -p app/src/main/assets
           cp index.html app/src/main/assets/index.html
+          cp app/src/main/assets/diagnostic.html app/src/main/assets/diagnostic.html
 
       - name: Validate embedded JavaScript syntax
         run: |
           node --version
-          node -e "const fs=require('fs');const s=fs.readFileSync('index.html','utf8');const m=s.match(/<script>([\\s\\S]*?)<\\/script>/);if(!m)throw new Error('script tag not found');new Function(m[1]);console.log('JavaScript syntax OK')"
+          node -e "const fs=require('fs');const s=fs.readFileSync('index.html','utf8');const m=s.match(/<script>([\s\S]*?)<\/script>/);if(!m)throw new Error('script tag not found');new Function(m[1]);console.log('JavaScript syntax OK')"
 
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
