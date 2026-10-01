@@ -1,10 +1,9 @@
 package com.bdssmdkacem.tankwar;
 
 import android.app.Activity;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
@@ -34,16 +33,16 @@ public class MainActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(45, 127, 43));
 
-        status = new TextView(this);
-        status.setText("TANK WAR\nLoading game HTML...");
-        status.setTextColor(Color.WHITE);
-        status.setTextSize(17);
-        status.setGravity(android.view.Gravity.CENTER);
-        status.setBackgroundColor(Color.rgb(45, 127, 43));
-        status.setPadding(24, 24, 24, 24);
-
         view = new WebView(this);
         view.setBackgroundColor(Color.rgb(45, 127, 43));
+
+        status = new TextView(this);
+        status.setText("TANK WAR  |  Loading...");
+        status.setTextColor(Color.WHITE);
+        status.setTextSize(11);
+        status.setGravity(Gravity.CENTER_VERTICAL);
+        status.setPadding(10, 0, 10, 0);
+        status.setBackgroundColor(Color.rgb(25, 25, 25));
 
         view.addJavascriptInterface(new Object() {
             @JavascriptInterface
@@ -55,7 +54,7 @@ public class MainActivity extends Activity {
             public void error(String message) {
                 runOnUiThread(() -> {
                     status.setVisibility(android.view.View.VISIBLE);
-                    status.setText("TANK WAR JS ERROR\n" + message);
+                    status.setText("TANK WAR JS ERROR: " + message);
                 });
             }
         }, "TankBridge");
@@ -65,15 +64,27 @@ public class MainActivity extends Activity {
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
-        settings.setLoadWithOverviewMode(true);
-        settings.setUseWideViewPort(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        settings.setLoadWithOverviewMode(false);
+        settings.setUseWideViewPort(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setMediaPlaybackRequiresUserGesture(false);
 
         view.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView v, String url) {
-                status.setText("TANK WAR\nHTML loaded - checking JavaScript...");
+                status.setVisibility(android.view.View.VISIBLE);
+                status.setText("TANK WAR  |  HTML loaded");
+                v.postDelayed(() -> v.evaluateJavascript(
+                        "(function(){return JSON.stringify({ready:document.readyState,canvas:!!document.getElementById('c'),tankReady:!!window.__tankWarReady,w:innerWidth,h:innerHeight});})()",
+                        value -> {
+                            if (value != null) {
+                                String s = value.replace("\\"", """);
+                                status.setText("TANK WAR  |  " + s);
+                            }
+                        }
+                ), 800);
             }
 
             @Override
@@ -85,9 +96,9 @@ public class MainActivity extends Activity {
                 if (request.isForMainFrame()) {
                     status.setVisibility(android.view.View.VISIBLE);
                     status.setText(
-                            "WEBVIEW ERROR\n"
+                            "WEBVIEW ERROR  |  "
                                     + error.getErrorCode()
-                                    + "\n"
+                                    + "  |  "
                                     + error.getDescription()
                     );
                 }
@@ -97,45 +108,32 @@ public class MainActivity extends Activity {
         view.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage message) {
-                String text = "WEB CONSOLE\n"
-                        + message.messageLevel()
-                        + ": "
-                        + message.message()
-                        + " (line "
-                        + message.lineNumber()
-                        + ")";
-                    status.setVisibility(android.view.View.GONE);
+                status.setVisibility(android.view.View.VISIBLE);
+                status.setText(
+                        "JS  |  "
+                                + message.message()
+                                + "  | line "
+                                + message.lineNumber()
+                );
                 return true;
             }
         });
 
-        root.addView(view, new FrameLayout.LayoutParams(-1, -1));
+        root.addView(view, new FrameLayout.LayoutParams(
+                -1, -1, Gravity.TOP
+        ));
+
+        FrameLayout.LayoutParams statusParams = new FrameLayout.LayoutParams(
+                -1, dp(34), Gravity.TOP
+        );
+        root.addView(status, statusParams);
         setContentView(root);
 
-        status.setVisibility(android.view.View.GONE);
-        try {
-            InputStream input = getAssets().open("index.html");
-            byte[] bytes = new byte[input.available()];
-            int offset = 0;
-            while (offset < bytes.length) {
-                int read = input.read(bytes, offset, bytes.length - offset);
-                if (read < 0) break;
-                offset += read;
-            }
-            input.close();
-            String html = new String(bytes, 0, offset, StandardCharsets.UTF_8);
-            status.setText("TANK WAR\\nHTML asset read - starting WebView...");
-            view.loadDataWithBaseURL(
-                    "file:///android_asset/",
-                    html,
-                    "text/html",
-                    "UTF-8",
-                    null
-            );
-        } catch (Exception e) {
-            status.setVisibility(android.view.View.VISIBLE);
-            status.setText("ASSET LOAD ERROR\\n" + e.toString());
-        }
+        view.loadUrl("file:///android_asset/index.html");
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     @Override
