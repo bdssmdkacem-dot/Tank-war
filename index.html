@@ -13,48 +13,48 @@ const STAGES=[
 ];
 const P={x:280,y:570,a:-1.57,s:150,inv:0};let firing=false;let lastDir='ArrowUp';const BASE={x:280,y:650,w:110,h:38,hp:10,max:10,hit:0};const B=[],E=[],F=[],U=[],D=[];let walls=[],crates=[];let speedPower=0,triplePower=0;
 const maps=[
- // 1 — IRON YARD: open entry lanes, brick islands and steel corners
- [[35,45,105,28,'steel'],[420,45,105,28,'steel'],[150,105,95,28,'brick'],[315,105,95,28,'brick'],
-  [150,133,28,92,'brick'],[382,133,28,92,'brick'],[250,145,60,28,'steel'],
-  [35,255,105,28,'brick'],[420,255,105,28,'brick'],[120,285,28,105,'brick'],[412,285,28,105,'brick'],
-  [205,315,70,28,'steel'],[285,315,70,28,'steel'],[35,430,105,28,'brick'],[420,430,105,28,'brick'],
-  [150,460,28,92,'brick'],[382,460,28,92,'brick'],[215,485,55,28,'steel'],[290,485,55,28,'steel'],
-  [35,560,105,28,'steel'],[420,560,105,28,'steel']],
- // 2 — BRICK MAZE: alternating corridors and steel choke points
- [[35,45,180,28,'brick'],[345,45,180,28,'brick'],[35,73,28,125,'steel'],[497,73,28,125,'steel'],
-  [95,105,125,28,'brick'],[340,105,125,28,'brick'],[250,45,60,28,'steel'],
-  [95,160,28,125,'brick'],[437,160,28,125,'brick'],[220,165,120,28,'brick'],
-  [250,193,28,95,'steel'],[282,193,28,95,'steel'],[35,330,135,28,'brick'],[390,330,135,28,'brick'],
-  [170,300,28,120,'steel'],[362,300,28,120,'steel'],[220,350,120,28,'brick'],
-  [35,445,125,28,'brick'],[400,445,125,28,'brick'],[95,475,28,90,'steel'],[437,475,28,90,'steel'],
-  [210,485,60,28,'brick'],[290,485,60,28,'brick'],[35,570,180,28,'steel'],[345,570,180,28,'steel']],
- // 3 — FORTRESS: symmetric fortress rooms with central protected lane
- [[30,35,500,28,'steel'],[30,35,28,170,'steel'],[502,35,28,170,'steel'],
-  [85,90,145,28,'brick'],[330,90,145,28,'brick'],[85,118,28,100,'brick'],[447,118,28,100,'brick'],
-  [215,85,130,28,'steel'],[215,113,28,100,'steel'],[317,113,28,100,'steel'],
-  [30,245,135,28,'brick'],[395,245,135,28,'brick'],[165,230,28,110,'steel'],[367,230,28,110,'steel'],
-  [220,260,120,28,'brick'],[250,288,60,80,'steel'],
-  [30,390,135,28,'brick'],[395,390,135,28,'brick'],[165,370,28,110,'steel'],[367,370,28,110,'steel'],
-  [85,455,145,28,'brick'],[330,455,145,28,'brick'],[85,483,28,80,'brick'],[447,483,28,80,'brick'],
-  [205,520,150,28,'steel'],[30,590,175,28,'steel'],[355,590,175,28,'steel']],
- // 4 — CROSS FIRE: cross-shaped lanes and four firing sectors
- [[30,45,160,28,'steel'],[370,45,160,28,'steel'],[30,595,160,28,'steel'],[370,595,160,28,'steel'],
-  [30,45,28,170,'steel'],[502,45,28,170,'steel'],[30,425,28,170,'steel'],[502,425,28,170,'steel'],
-  [90,105,110,28,'brick'],[360,105,110,28,'brick'],[90,133,28,95,'brick'],[442,133,28,95,'brick'],
-  [215,115,130,28,'steel'],[215,143,28,105,'steel'],[317,143,28,105,'steel'],
-  [75,300,130,28,'brick'],[355,300,130,28,'brick'],[205,275,150,28,'steel'],
-  [205,395,150,28,'steel'],[75,420,130,28,'brick'],[355,420,130,28,'brick'],
-  [90,515,110,28,'brick'],[360,515,110,28,'brick'],[215,495,130,28,'steel']],
- // 5 — STEEL CITADEL: dense endgame labyrinth around the base
- [[30,35,500,28,'steel'],[30,35,28,625,'steel'],[502,35,28,625,'steel'],
-  [85,90,390,28,'brick'],[85,118,28,135,'brick'],[447,118,28,135,'brick'],
-  [170,90,28,95,'steel'],[362,90,28,95,'steel'],[250,90,60,28,'steel'],
-  [110,245,115,28,'brick'],[335,245,115,28,'brick'],[110,273,28,105,'steel'],[422,273,28,105,'steel'],
-  [225,235,110,28,'steel'],[266,263,28,105,'steel'],
-  [55,400,120,28,'brick'],[385,400,120,28,'brick'],[55,428,28,105,'steel'],[477,428,28,105,'steel'],
-  [175,390,55,28,'steel'],[330,390,55,28,'steel'],[225,430,110,28,'brick'],
-  [85,535,145,28,'brick'],[330,535,145,28,'brick'],[85,563,28,67,'brick'],[447,563,28,67,'brick'],
-  [205,585,55,28,'steel'],[300,585,55,28,'steel']]
+ // 1 — GRASSLAND: vertical lanes, central gaps, classic home at bottom
+ [[35,35,110,28,'brick'],[205,35,150,28,'brick'],[400,35,125,28,'brick'],
+  [35,95,28,125,'brick'],[95,95,28,125,'brick'],[437,95,28,125,'brick'],
+  [160,115,120,28,'brick'],[320,115,80,28,'brick'],[250,155,28,95,'steel'],
+  [35,265,120,28,'brick'],[405,265,120,28,'brick'],[160,285,28,100,'brick'],[365,285,28,100,'brick'],
+  [215,300,130,28,'steel'],[95,400,110,28,'brick'],[355,400,110,28,'brick'],
+  [205,425,28,95,'brick'],[327,425,28,95,'brick'],[245,450,70,28,'steel'],
+  [35,530,105,28,'brick'],[420,530,105,28,'brick'],[155,545,70,28,'steel'],[335,545,70,28,'steel']],
+ // 2 — MAZE: alternating horizontal walls and offset passages
+ [[30,35,180,28,'brick'],[350,35,180,28,'brick'],[30,85,28,125,'brick'],[502,85,28,125,'brick'],
+  [95,85,120,28,'steel'],[315,85,120,28,'steel'],[235,55,90,28,'brick'],
+  [95,160,28,120,'brick'],[437,160,28,120,'brick'],[150,195,110,28,'brick'],[300,195,110,28,'brick'],
+  [235,225,28,100,'steel'],[295,225,28,100,'steel'],
+  [30,315,145,28,'brick'],[377,315,145,28,'brick'],[175,345,120,28,'steel'],[290,345,120,28,'steel'],
+  [95,395,28,105,'brick'],[437,395,28,105,'brick'],[150,430,105,28,'brick'],[305,430,105,28,'brick'],
+  [235,455,28,95,'steel'],[295,455,28,95,'steel'],
+  [30,525,180,28,'brick'],[350,525,180,28,'brick'],[225,550,110,28,'steel']],
+ // 3 — FORTRESS: central keep and symmetrical chambers
+ [[30,30,500,28,'steel'],[30,30,28,150,'steel'],[502,30,28,150,'steel'],
+  [75,85,145,28,'brick'],[340,85,145,28,'brick'],[75,113,28,105,'brick'],[457,113,28,105,'brick'],
+  [210,80,140,28,'brick'],[210,108,28,90,'steel'],[322,108,28,90,'steel'],
+  [30,235,140,28,'brick'],[390,235,140,28,'brick'],[160,220,28,125,'steel'],[364,220,28,125,'steel'],
+  [215,255,130,28,'brick'],[215,283,28,105,'brick'],[327,283,28,105,'brick'],
+  [55,400,145,28,'brick'],[340,400,145,28,'brick'],[110,430,28,100,'brick'],[422,430,28,100,'brick'],
+  [205,420,150,28,'steel'],[250,470,60,28,'brick'],[30,545,145,28,'steel'],[375,545,155,28,'steel']],
+ // 4 — CROSS FIRE: four sectors around a central cross
+ [[30,35,145,28,'brick'],[385,35,145,28,'brick'],[30,95,28,115,'steel'],[502,95,28,115,'steel'],
+  [170,55,55,95,'brick'],[335,55,55,95,'brick'],[250,40,60,120,'steel'],
+  [30,245,125,28,'brick'],[405,245,125,28,'brick'],[155,215,120,28,'steel'],[285,215,120,28,'steel'],
+  [250,185,60,150,'brick'],[30,335,125,28,'brick'],[405,335,125,28,'brick'],
+  [155,365,120,28,'steel'],[285,365,120,28,'steel'],
+  [170,410,55,105,'brick'],[335,410,55,105,'brick'],[250,390,60,120,'steel'],
+  [30,515,145,28,'brick'],[375,515,155,28,'brick'],[205,540,150,28,'steel']],
+ // 5 — STEEL CITADEL: dense final maze with protected central approach
+ [[30,30,120,28,'steel'],[175,30,90,28,'brick'],[265,30,90,28,'steel'],[395,30,135,28,'steel'],
+  [30,75,28,120,'brick'],[115,75,28,120,'steel'],[205,75,28,120,'brick'],[355,75,28,120,'brick'],[445,75,28,120,'steel'],
+  [55,205,110,28,'brick'],[190,205,110,28,'steel'],[325,205,110,28,'steel'],[470,205,60,28,'brick'],
+  [80,245,28,105,'steel'],[170,245,28,105,'brick'],[300,245,28,105,'brick'],[390,245,28,105,'steel'],
+  [30,365,125,28,'brick'],[190,365,105,28,'steel'],[325,365,105,28,'steel'],[430,365,100,28,'brick'],
+  [115,405,28,100,'brick'],[205,405,28,100,'steel'],[355,405,28,100,'brick'],[445,405,28,100,'steel'],
+  [30,515,150,28,'steel'],[205,515,110,28,'brick'],[330,515,105,28,'brick'],[420,515,110,28,'steel'],
+  [180,555,75,28,'steel'],[305,555,75,28,'steel']]
 ];
 const crates0=[[[145,80,28,28],[395,85,28,28],[135,385,28,28],[390,370,28,28]],[[85,90,30,30],[315,90,30,30],[90,395,30,30],[310,400,30,30]],[[75,280,30,30],[455,280,30,30],[110,350,30,30],[420,350,30,30]],[[90,120,30,30],[440,120,30,30],[90,550,30,30],[440,550,30,30]],[[70,90,28,28],[462,90,28,28],[70,580,28,28],[462,580,28,28]]];
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function hit(r,q){let X=clamp(r.x,q.x,q.x+q.w),Y=clamp(r.y,q.y,q.y+q.h);return(r.x-X)**2+(r.y-Y)**2<r.r*r.r}function blocked(px,py,r=15){return walls.some(w=>w.hp>0&&hit({x:px,y:py,r},w))||D.some(d=>d.hp>0&&hit({x:px,y:py,r},d))}function baseHit(px,py,r=5){return px>BASE.x-BASE.w/2-r&&px<BASE.x+BASE.w/2+r&&py>BASE.y-BASE.h/2-r&&py<BASE.y+BASE.h/2+r}
@@ -130,33 +130,25 @@ function tank(t,col,enemy){x.save();x.translate(Math.round(t.x),Math.round(t.y))
  x.restore()}
 function base(){x.save();x.translate(BASE.x,BASE.y);x.fillStyle=BASE.hit>0?'#c33':'#222';x.fillRect(-55,-19,110,38);x.fillStyle='#aaa';x.fillRect(-49,-14,98,28);x.fillStyle='#333';x.fillRect(-42,-9,84,18);x.fillStyle='#dca128';x.fillRect(-35,-5,70,10);x.fillStyle='#111';x.font='bold 12px monospace';x.textAlign='center';x.fillText('★ UNITY HQ ★',0,4);x.fillStyle='#ff3333';x.fillRect(-50,-25,100,4);x.fillStyle='#45e05d';x.fillRect(-48,-24,96*(BASE.hp/BASE.max),2);x.restore()}
 function terrain(){
- const patterns=[
-  // Stage 1: vertical grass/brick lanes inspired by the reference image
-  [{x:40,w:45},{x:135,w:42},{x:230,w:42},{x:325,w:42},{x:420,w:42},{x:515,w:28}],
-  // Stage 2: alternating horizontal/vertical corridors
-  [{x:28,w:58},{x:155,w:44},{x:285,w:44},{x:415,w:44}],
-  // Stage 3: fortress garden blocks
-  [{x:25,w:72},{x:145,w:52},{x:235,w:90},{x:355,w:52},{x:463,w:72}],
-  // Stage 4: cross-fire grass sectors
-  [{x:30,w:55},{x:125,w:48},{x:235,w:48},{x:345,w:48},{x:455,w:55}],
-  // Stage 5: dense citadel lanes
-  [{x:24,w:50},{x:105,w:42},{x:190,w:42},{x:275,w:42},{x:360,w:42},{x:445,w:42},{x:520,w:25}]
- ][stage-1]||[];
- x.fillStyle='#0d2815';x.fillRect(0,0,W,H);
- // Grassland base
- x.fillStyle='#347f2d';x.fillRect(8,8,W-16,610);
- // Dark green vegetation strips with pixel clusters
- for(let p of patterns){x.fillStyle='#175a27';x.fillRect(p.x,8,p.w,610);}
- for(let yy=12;yy<615;yy+=8)for(let xx=12;xx<548;xx+=9){let n=(xx*13+yy*7+stage*17)%19;if(n<5){x.fillStyle='#62b83b';x.fillRect(xx,yy,4,4)}else if(n===7||n===8){x.fillStyle='#1b5725';x.fillRect(xx,yy,3,5)}}
- // Black tactical corridors. Their layout changes by stage.
- x.fillStyle='#050505';
- if(stage===1){for(let xx of [8,105,200,295,390,485])x.fillRect(xx,8,22,610);x.fillRect(8,555,544,63)}
- if(stage===2){x.fillRect(8,205,544,34);x.fillRect(8,395,544,34);for(let xx of [78,255,432])x.fillRect(xx,8,30,610)}
- if(stage===3){x.fillRect(8,290,544,42);x.fillRect(8,470,544,38);x.fillRect(259,8,42,610)}
- if(stage===4){x.fillRect(8,305,544,38);x.fillRect(261,8,38,610);x.fillRect(8,120,150,28);x.fillRect(402,120,150,28);x.fillRect(8,510,150,28);x.fillRect(402,510,150,28)}
- if(stage===5){for(let xx of [8,92,177,262,347,432,517])x.fillRect(xx,8,26,610);x.fillRect(8,190,544,30);x.fillRect(8,380,544,30);x.fillRect(8,540,544,30)}
- // Rebuild grass texture over corridors only lightly, keeping readable routes.
- x.fillStyle='#222';for(let y=28;y<600;y+=40)for(let z=28;z<W-20;z+=40)x.fillRect(z,y,1,1);
+ const layouts=[
+  [[0,0,560,620]],[[0,0,560,620]],[[0,0,560,620]],[[0,0,560,620]],[[0,0,560,620]]
+ ][stage-1];
+ x.fillStyle='#2d7f2b';x.fillRect(8,8,W-16,610);
+ // Pixel grass texture, deliberately sparse so the tactical map stays readable.
+ for(let yy=12;yy<615;yy+=8)for(let xx=12;xx<548;xx+=8){
+   let n=(xx*17+yy*11+stage*23)%31;
+   if(n<4){x.fillStyle='#69c83e';x.fillRect(xx,yy,3,5)}
+   else if(n===7||n===8){x.fillStyle='#185c27';x.fillRect(xx+2,yy,3,4)}
+ }
+ // Dark water/earth channels vary by stage, but do not replace playable space.
+ x.fillStyle='#183f22';
+ if(stage===1){x.fillRect(8,8,24,610);x.fillRect(528,8,24,610)}
+ if(stage===2){x.fillRect(8,8,22,610);x.fillRect(530,8,22,610)}
+ if(stage===3){x.fillRect(8,8,20,610);x.fillRect(532,8,20,610);x.fillRect(8,8,544,20)}
+ if(stage===4){x.fillRect(8,8,20,610);x.fillRect(532,8,20,610)}
+ if(stage===5){x.fillRect(8,8,18,610);x.fillRect(534,8,18,610)}
+ // subtle grid/dirt pixels
+ x.fillStyle='#214d25';for(let y=24;y<600;y+=32)for(let z=24;z<540;z+=32)x.fillRect(z,y,2,2);
 }
 function render(){terrain();walls.forEach(w=>wall(w));crates.forEach(crate);D.forEach(defense);base();U.forEach(u=>{x.fillStyle=u.t===1?'#49e06b':u.t===2?'#e9562e':'#48a7ff';x.fillRect(u.x-12,u.y-12,24,24);x.fillStyle='#fff';x.font='bold 12px monospace';x.textAlign='center';x.fillText(u.t===1?'S':u.t===2?'B':'3',u.x,u.y+4);x.strokeStyle='#fff';x.strokeRect(u.x-12.5,u.y-12.5,25,25)});B.forEach(b=>{x.fillStyle=b.enemy?'#ff7b22':b.k===3?'#e23b22':b.k===2?'#fff':'#f5c43a';x.fillRect(b.x-b.r,b.y-b.r,b.r*2,b.r*2);if(b.k===3){x.fillStyle='#ffd44a';x.fillRect(b.x-b.r-7,b.y-2,7,4)}});F.forEach(p=>{x.fillStyle=p.m?'#fff':p.l>.35?'#f5b820':'#d64a16';x.fillRect(p.x-p.z/2,p.y-p.z/2,p.z,p.z)});E.forEach(e=>tank(e,'',1));if(P.inv<=0||Math.floor(P.inv*12)%2===0)tank(P,'',0);x.fillStyle='#eee';x.font='bold 13px monospace';x.textAlign='left';x.fillText(STAGES[stage-1].name,10,690)}
 function loop(t){let dt=Math.min(.033,(t-last)/1000||.016);last=t;update(dt);render();requestAnimationFrame(loop)}
