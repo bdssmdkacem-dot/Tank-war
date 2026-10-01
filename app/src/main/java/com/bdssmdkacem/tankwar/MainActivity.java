@@ -20,7 +20,12 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         WebView view = new WebView(this);
+
+        // Keep the known-compatible rendering path for the Canvas game.
+        // This was present in the last build where the WebView could render the game.
+        view.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         view.setBackgroundColor(0xFF101010);
+
         view.setWebViewClient(new WebViewClient());
         view.setWebChromeClient(new WebChromeClient() {
             @Override public boolean onConsoleMessage(ConsoleMessage message) {
@@ -53,8 +58,6 @@ public class MainActivity extends Activity {
             in.close();
             String html = out.toString(StandardCharsets.UTF_8.name());
 
-            // Loading the bundled HTML directly avoids file:// rendering differences
-            // between Android WebView versions and makes the packaged asset deterministic.
             view.loadDataWithBaseURL(
                 "https://tankwar.local/",
                 html,
