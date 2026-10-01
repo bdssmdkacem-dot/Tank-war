@@ -37,14 +37,17 @@ public class MainActivity extends Activity {
         root.addView(status, new FrameLayout.LayoutParams(-1, -1));
 
         WebView view = new WebView(this);
-        view.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+        // Keep the default hardware-accelerated WebView path.
+        // Software WebView rendering caused a black surface on affected devices.
         view.setBackgroundColor(Color.rgb(45, 127, 43));
 
         view.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView v, String url) {
                 status.setVisibility(android.view.View.GONE);
             }
-            @Override public void onReceivedError(WebView v, int errorCode, String description, String failingUrl) {
+
+            @Override public void onReceivedError(WebView v, int errorCode,
+                                                   String description, String failingUrl) {
                 status.setVisibility(android.view.View.VISIBLE);
                 status.setText("TANK WAR\nWEBVIEW ERROR\n" + errorCode + "\n" + description);
             }
@@ -84,7 +87,9 @@ public class MainActivity extends Activity {
             in.close();
 
             String html = out.toString(StandardCharsets.UTF_8.name());
-            if (html.length() < 1000) throw new IllegalStateException("index.html is unexpectedly small");
+            if (html.length() < 1000) {
+                throw new IllegalStateException("index.html is unexpectedly small");
+            }
 
             view.loadDataWithBaseURL(
                     "file:///android_asset/",
