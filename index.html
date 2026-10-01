@@ -94,10 +94,35 @@ function wall(q){
 function crate(q){x.fillStyle='#8f5b16';x.fillRect(q.x,q.y,q.w,q.h);x.fillStyle='#e0b348';x.fillRect(q.x+4,q.y+4,q.w-8,4);x.fillRect(q.x+4,q.y+q.h-8,q.w-8,4);x.fillRect(q.x+5,q.y+5,4,q.h-10);x.fillRect(q.x+q.w-9,q.y+5,4,q.h-10)}
 function tank(t,col,enemy){x.save();x.translate(Math.round(t.x),Math.round(t.y));x.rotate(t.a);let big=enemy&&t.t===3;x.fillStyle='#111';x.fillRect(big?-32:-22,big?-23:-15,big?64:44,big?46:30);x.fillStyle='#444';x.fillRect(big?-28:-19,big?-20:-13,big?56:38,big?40:26);x.fillStyle=enemy?(t.t===3?'#9b2020':t.t===2?'#d74b2f':'#d7d9d6'):'#3e9d4d';x.fillRect(big?-20:-13,big?-18:-12,big?40:26,big?24:24);x.fillStyle='#222';x.fillRect(big?-12:-7,big?-6:-3,big?24:14,12);x.fillStyle='#777';x.fillRect(big?-7:-5,big?-45:-30,big?14:10,25);x.fillStyle='#eee';x.fillRect(big?-3:-2,big?-45:-30,big?6:4,20);x.fillStyle='#222';for(let i=big?-16:-8;i<=(big?16:8);i+=8){x.fillRect(big?-29:-20,i,big?7:5,4);x.fillRect(big?22:15,i,big?7:5,4)}if(big){x.fillStyle='#ffcf35';x.fillRect(-22,-28,44,3);x.fillStyle='#f33';x.fillRect(-20,-27,40*(t.h/t.max),2)}x.fillStyle='#eee';x.fillRect(big?-11:-7,big?-10:-8,4,4);x.fillRect(big?7:4,big?-10:-8,4,4);x.restore()}
 function base(){x.save();x.translate(BASE.x,BASE.y);x.fillStyle=BASE.hit>0?'#c33':'#222';x.fillRect(-55,-19,110,38);x.fillStyle='#aaa';x.fillRect(-49,-14,98,28);x.fillStyle='#333';x.fillRect(-42,-9,84,18);x.fillStyle='#dca128';x.fillRect(-35,-5,70,10);x.fillStyle='#111';x.font='bold 12px monospace';x.textAlign='center';x.fillText('★ UNITY HQ ★',0,4);x.fillStyle='#ff3333';x.fillRect(-50,-25,100,4);x.fillStyle='#45e05d';x.fillRect(-48,-24,96*(BASE.hp/BASE.max),2);x.restore()}
-function render(){x.fillStyle='#050505';x.fillRect(0,0,W,H);
- // classic green terrain accents
- x.fillStyle='#164d25';x.fillRect(8,8,18,610);x.fillRect(534,8,18,610);x.fillRect(8,8,544,18);
- for(let yy=12;yy<618;yy+=9)for(let xx=10;xx<550;xx+=13){if((xx+yy)%3===0){x.fillStyle='#5bbd38';x.fillRect(xx,yy,4,5)}else if((xx+yy)%5===0){x.fillStyle='#2b7d2d';x.fillRect(xx,yy,3,4)}}
- x.fillStyle='#151515';for(let y=28;y<H-20;y+=40)for(let z=28;z<W-20;z+=40)x.fillRect(z,y,1,1);walls.forEach(w=>wall(w));crates.forEach(crate);D.forEach(defense);base();U.forEach(u=>{x.fillStyle=u.t===1?'#49e06b':u.t===2?'#e9562e':'#48a7ff';x.fillRect(u.x-12,u.y-12,24,24);x.fillStyle='#fff';x.font='bold 12px monospace';x.textAlign='center';x.fillText(u.t===1?'S':u.t===2?'B':'3',u.x,u.y+4);x.strokeStyle='#fff';x.strokeRect(u.x-12.5,u.y-12.5,25,25)});B.forEach(b=>{x.fillStyle=b.enemy?'#ff7b22':b.k===3?'#e23b22':b.k===2?'#fff':'#f5c43a';x.fillRect(b.x-b.r,b.y-b.r,b.r*2,b.r*2);if(b.k===3){x.fillStyle='#ffd44a';x.fillRect(b.x-b.r-7,b.y-2,7,4)}});F.forEach(p=>{x.fillStyle=p.m?'#fff':p.l>.35?'#f5b820':'#d64a16';x.fillRect(p.x-p.z/2,p.y-p.z/2,p.z,p.z)});E.forEach(e=>tank(e,'',1));if(P.inv<=0||Math.floor(P.inv*12)%2===0)tank(P,'',0);x.fillStyle='#eee';x.font='bold 13px monospace';x.textAlign='left';x.fillText(STAGES[stage-1].name,10,690)}
+function terrain(){
+ const patterns=[
+  // Stage 1: vertical grass/brick lanes inspired by the reference image
+  [{x:40,w:45},{x:135,w:42},{x:230,w:42},{x:325,w:42},{x:420,w:42},{x:515,w:28}],
+  // Stage 2: alternating horizontal/vertical corridors
+  [{x:28,w:58},{x:155,w:44},{x:285,w:44},{x:415,w:44}],
+  // Stage 3: fortress garden blocks
+  [{x:25,w:72},{x:145,w:52},{x:235,w:90},{x:355,w:52},{x:463,w:72}],
+  // Stage 4: cross-fire grass sectors
+  [{x:30,w:55},{x:125,w:48},{x:235,w:48},{x:345,w:48},{x:455,w:55}],
+  // Stage 5: dense citadel lanes
+  [{x:24,w:50},{x:105,w:42},{x:190,w:42},{x:275,w:42},{x:360,w:42},{x:445,w:42},{x:520,w:25}]
+ ][stage-1]||[];
+ x.fillStyle='#0d2815';x.fillRect(0,0,W,H);
+ // Grassland base
+ x.fillStyle='#347f2d';x.fillRect(8,8,W-16,610);
+ // Dark green vegetation strips with pixel clusters
+ for(let p of patterns){x.fillStyle='#175a27';x.fillRect(p.x,8,p.w,610);}
+ for(let yy=12;yy<615;yy+=8)for(let xx=12;xx<548;xx+=9){let n=(xx*13+yy*7+stage*17)%19;if(n<5){x.fillStyle='#62b83b';x.fillRect(xx,yy,4,4)}else if(n===7||n===8){x.fillStyle='#1b5725';x.fillRect(xx,yy,3,5)}}
+ // Black tactical corridors. Their layout changes by stage.
+ x.fillStyle='#050505';
+ if(stage===1){for(let xx of [8,105,200,295,390,485])x.fillRect(xx,8,22,610);x.fillRect(8,555,544,63)}
+ if(stage===2){x.fillRect(8,205,544,34);x.fillRect(8,395,544,34);for(let xx of [78,255,432])x.fillRect(xx,8,30,610)}
+ if(stage===3){x.fillRect(8,290,544,42);x.fillRect(8,470,544,38);x.fillRect(259,8,42,610)}
+ if(stage===4){x.fillRect(8,305,544,38);x.fillRect(261,8,38,610);x.fillRect(8,120,150,28);x.fillRect(402,120,150,28);x.fillRect(8,510,150,28);x.fillRect(402,510,150,28)}
+ if(stage===5){for(let xx of [8,92,177,262,347,432,517])x.fillRect(xx,8,26,610);x.fillRect(8,190,544,30);x.fillRect(8,380,544,30);x.fillRect(8,540,544,30)}
+ // Rebuild grass texture over corridors only lightly, keeping readable routes.
+ x.fillStyle='#222';for(let y=28;y<600;y+=40)for(let z=28;z<W-20;z+=40)x.fillRect(z,y,1,1);
+}
+function render(){terrain();walls.forEach(w=>wall(w));crates.forEach(crate);D.forEach(defense);base();U.forEach(u=>{x.fillStyle=u.t===1?'#49e06b':u.t===2?'#e9562e':'#48a7ff';x.fillRect(u.x-12,u.y-12,24,24);x.fillStyle='#fff';x.font='bold 12px monospace';x.textAlign='center';x.fillText(u.t===1?'S':u.t===2?'B':'3',u.x,u.y+4);x.strokeStyle='#fff';x.strokeRect(u.x-12.5,u.y-12.5,25,25)});B.forEach(b=>{x.fillStyle=b.enemy?'#ff7b22':b.k===3?'#e23b22':b.k===2?'#fff':'#f5c43a';x.fillRect(b.x-b.r,b.y-b.r,b.r*2,b.r*2);if(b.k===3){x.fillStyle='#ffd44a';x.fillRect(b.x-b.r-7,b.y-2,7,4)}});F.forEach(p=>{x.fillStyle=p.m?'#fff':p.l>.35?'#f5b820':'#d64a16';x.fillRect(p.x-p.z/2,p.y-p.z/2,p.z,p.z)});E.forEach(e=>tank(e,'',1));if(P.inv<=0||Math.floor(P.inv*12)%2===0)tank(P,'',0);x.fillStyle='#eee';x.font='bold 13px monospace';x.textAlign='left';x.fillText(STAGES[stage-1].name,10,690)}
 function loop(t){let dt=Math.min(.033,(t-last)/1000||.016);last=t;update(dt);render();requestAnimationFrame(loop)}
 addEventListener('keydown',e=>{K.add(e.key);if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.key==='1')setW(1);if(e.key==='2')setW(2);if(e.key==='3')setW(3)});addEventListener('keyup',e=>K.delete(e.key));document.querySelectorAll('[data-k]').forEach(b=>{let k=b.dataset.k;b.onpointerdown=e=>{e.preventDefault();K.add(k)};['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>K.delete(k)))});fire.onclick=e=>{e.preventDefault();fire()};restart.onclick=()=>{score=0;lives=5;stage=1;over=0;win=false;overlay.classList.remove('show');load()};setW(1);load();requestAnimationFrame(loop)})();</script></body></html>
