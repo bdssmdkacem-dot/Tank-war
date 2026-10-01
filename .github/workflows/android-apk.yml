@@ -26,11 +26,10 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Prepare web game assets
+      - name: Prepare web game asset
         run: |
           mkdir -p app/src/main/assets
           cp index.html app/src/main/assets/index.html
-          cp app/src/main/assets/diagnostic.html app/src/main/assets/diagnostic.html
 
       - name: Validate embedded JavaScript syntax
         run: |
