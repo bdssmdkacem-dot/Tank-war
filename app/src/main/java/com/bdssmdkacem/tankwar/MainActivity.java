@@ -9,6 +9,9 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends Activity {
     @Override public void onCreate(Bundle state) {
@@ -17,9 +20,7 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         WebView view = new WebView(this);
-        // Software rendering avoids black Canvas output on incompatible Android WebView GPU paths.
-        view.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
-        view.setBackgroundColor(0xFF777777);
+        view.setBackgroundColor(0xFF101010);
         view.setWebViewClient(new WebViewClient());
         view.setWebChromeClient(new WebChromeClient() {
             @Override public boolean onConsoleMessage(ConsoleMessage message) {
@@ -38,8 +39,40 @@ public class MainActivity extends Activity {
         s.setUseWideViewPort(true);
         s.setLoadWithOverviewMode(true);
 
-        view.loadUrl("file:///android_asset/index.html");
         setContentView(view);
+        loadGame(view);
+    }
+
+    private void loadGame(WebView view) {
+        try {
+            InputStream in = getAssets().open("index.html");
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+            in.close();
+            String html = out.toString(StandardCharsets.UTF_8.name());
+
+            // Loading the bundled HTML directly avoids file:// rendering differences
+            // between Android WebView versions and makes the packaged asset deterministic.
+            view.loadDataWithBaseURL(
+                "https://tankwar.local/",
+                html,
+                "text/html",
+                "UTF-8",
+                null
+            );
+        } catch (Exception e) {
+            android.util.Log.e("TankWar", "Cannot load packaged game", e);
+            String msg = "TANK WAR\n\nGAME ASSET ERROR\n" + e.getClass().getSimpleName() + ": " + e.getMessage();
+            view.loadData(
+                "<html><body style='background:#111;color:#fff;font:700 18px monospace;padding:30px;white-space:pre-wrap'>"
+                + msg.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+                + "</body></html>",
+                "text/html",
+                "UTF-8"
+            );
+        }
     }
 
     @Override public void onBackPressed() { }
