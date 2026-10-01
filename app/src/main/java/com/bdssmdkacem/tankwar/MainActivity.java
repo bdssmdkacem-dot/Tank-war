@@ -1,6 +1,8 @@
 package com.bdssmdkacem.tankwar;
 
 import android.app.Activity;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Window;
@@ -112,7 +114,29 @@ public class MainActivity extends Activity {
         root.addView(status, new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
 
-        view.loadUrl("file:///android_asset/index.html");
+        try {
+            InputStream input = getAssets().open("index.html");
+            byte[] bytes = new byte[input.available()];
+            int offset = 0;
+            while (offset < bytes.length) {
+                int read = input.read(bytes, offset, bytes.length - offset);
+                if (read < 0) break;
+                offset += read;
+            }
+            input.close();
+            String html = new String(bytes, 0, offset, StandardCharsets.UTF_8);
+            status.setText("TANK WAR\\nHTML asset read - starting WebView...");
+            view.loadDataWithBaseURL(
+                    "file:///android_asset/",
+                    html,
+                    "text/html",
+                    "UTF-8",
+                    null
+            );
+        } catch (Exception e) {
+            status.setVisibility(android.view.View.VISIBLE);
+            status.setText("ASSET LOAD ERROR\\n" + e.toString());
+        }
     }
 
     @Override
