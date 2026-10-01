@@ -104,16 +104,15 @@ public class MainActivity extends Activity {
                         + " (line "
                         + message.lineNumber()
                         + ")";
-                status.setVisibility(android.view.View.VISIBLE);
-                status.setText(text);
+                    status.setVisibility(android.view.View.GONE);
                 return true;
             }
         });
 
         root.addView(view, new FrameLayout.LayoutParams(-1, -1));
-        root.addView(status, new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
 
+        status.setVisibility(android.view.View.GONE);
         try {
             InputStream input = getAssets().open("index.html");
             byte[] bytes = new byte[input.available()];
