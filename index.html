@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Tank War</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#777;font-family:monospace;overflow:hidden;touch-action:none}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh}
+#game{display:flex;height:min(100vh,760px);max-width:100vw}
+canvas{height:100%;width:auto;max-width:calc(100vw - 105px);background:#000;image-rendering:pixelated;border:5px solid #555}
+#hud{width:105px;background:#777;color:#080808;padding:18px 10px;display:flex;flex-direction:column;align-items:center;gap:24px;font-weight:900}
+.stat{text-align:center;font-size:17px}.value{font-size:28px;line-height:1.05}
+#touch{position:fixed;left:0;right:105px;bottom:10px;display:flex;justify-content:space-between;padding:0 14px;pointer-events:none}
+.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:4px;pointer-events:auto}
+.pad button,.fire{font:900 22px monospace;border:3px solid #333;background:#bbb;color:#111;border-radius:4px;opacity:.9}
+.pad button:active,.fire:active{background:#eee}
+.up{grid-column:2}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}
+.fire{width:80px;height:80px;border-radius:50%;align-self:end}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;color:#fff;text-align:center;z-index:5}
+#overlay.show{display:flex}.box{border:5px solid #aaa;background:#111;padding:28px;min-width:260px}.box h1{margin:0 0 15px;font-size:28px}.box button{font:900 18px monospace;padding:10px 22px}
+@media(max-width:650px){#game{height:100vh}#hud{width:88px;padding:12px 5px;gap:18px}.value{font-size:23px}.stat{font-size:14px}canvas{max-width:calc(100vw - 88px)}#touch{right:88px}}
+</style>
+</head>
+<body>
+<div id="game">
+<canvas id="c" width="560" height="700"></canvas>
+<aside id="hud">
+<div class="stat">LEVEL<div class="value" id="level">45</div></div>
+<div class="stat">IP<div class="value" id="lives">5</div></div>
+<div class="stat">SCORE<div class="value" id="score">387</div></div>
+<div class="stat">ENEMY<div class="value" id="enemies">3</div></div>
+<div style="margin-top:auto;font-size:30px">→</div>
+</aside>
+</div>
+<div id="touch">
+<div class="pad">
+<button class="up" data-key="ArrowUp">▲</button><button class="left" data-key="ArrowLeft">◀</button>
+<button class="down" data-key="ArrowDown">▼</button><button class="right" data-key="ArrowRight">▶</button>
+</div>
+<button class="fire" id="fire">FIRE</button>
+</div>
+<div id="overlay"><div class="box"><h1 id="overTitle">GAME OVER</h1><div id="overText"></div><br><button id="restart">RESTART</button></div></div>
+<script>
+(()=> {
+const c=document.getElementById('c'),ctx=c.getContext('2d'),W=c.width,H=c.height;
+const keys=new Set(); let score=387,lives=5,level=45,gameOver=false,last=0,shotCooldown=0;
+const player={x:280,y:610,a:-Math.PI/2,speed:150};
+const bullets=[],enemyBullets=[];
+const walls=[
+{x:55,y:65,w:65,h:155},{x:190,y:65,w:65,h:125},{x:315,y:65,w:65,h:125},{x:455,y:65,w:65,h:165},
+{x:478,y:300,w:65,h:35},{x:235,y:625,w:100,h:75}
+];
+const crates=[{x:12,y:400,w:28,h:48},{x:12,y:475,w:28,h:48},{x:230,y:420,w:30,h:42}];
+const enemies=[
+{x:505,y:30,a:Math.PI/2,hp:2,t:0},{x:510,y:545,a:-Math.PI/2,hp:2,t:1},{x:280,y:675,a:-Math.PI/2,hp:3,t:2}
+];
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function rectCircle(x,y,r,wall){const qx=clamp(x,wall.x,wall.x+wall.w),qy=clamp(y,wall.y,wall.y+wall.h);return (x-qx)**2+(y-qy)**2<r*r}
+function blocked(x,y,r=15){return walls.some(w=>rectCircle(x,y,r,w))}
+function drawWall(w){ctx.fillStyle='#777';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.fillStyle='#eee';for(let yy=w.y+5;yy<w.y+w.h-2;yy+=28){for(let xx=w.x+5;xx<w.x+w.w-2;xx+=25){ctx.fillRect(xx,yy,15,18)}}ctx.strokeStyle='#aaa';ctx.lineWidth=3;ctx.strokeRect(w.x,w.y,w.w,w.h)}
+function drawCrate(q){ctx.fillStyle='#bd8420';ctx.fillRect(q.x,q.y,q.w,q.h);ctx.fillStyle='#edbd48';ctx.fillRect(q.x+5,q.y+4,7,q.h-8);ctx.fillStyle='#70470e';ctx.fillRect(q.x+q.w-7,q.y+4,5,q.h-8)}
+function tank(t,color,enemy=false){ctx.save();ctx.translate(t.x,t.y);ctx.rotate(t.a);ctx.fillStyle='#555';ctx.fillRect(-17,-15,34,30);ctx.fillStyle=color;ctx.fillRect(-12,-11,24,22);ctx.fillStyle='#222';ctx.fillRect(-7,-7,14,14);ctx.fillStyle='#bbb';ctx.fillRect(-3,-28,6,20);ctx.fillStyle='#333';ctx.fillRect(-20,-13,6,26);ctx.fillRect(14,-13,6,26);if(enemy){ctx.fillStyle='#ddd';ctx.fillRect(-9,-4,5,5);ctx.fillRect(5,-4,5,5)}ctx.restore()}
+function fire(t,enemy=false){const s=enemy?260:360;bullets.push({x:t.x+Math.cos(t.a)*28,y:t.y+Math.sin(t.a)*28,vx:Math.cos(t.a)*s,vy:Math.sin(t.a)*s,enemy,life:2})}
+function shoot(){if(shotCooldown<=0&&!gameOver){fire(player);shotCooldown=.35}}
+function reset(){score=387;lives=5;gameOver=false;player.x=280;player.y=610;player.a=-Math.PI/2;enemies.splice(0,enemies.length,...[
+{x:505,y:30,a:Math.PI/2,hp:2,t:0},{x:510,y:545,a:-Math.PI/2,hp:2,t:1},{x:280,y:675,a:-Math.PI/2,hp:3,t:2}]);bullets.length=0;enemyBullets.length=0;document.getElementById('overlay').classList.remove('show');}
+function hitPlayer(){lives--;if(lives<=0){gameOver=true;document.getElementById('overTitle').textContent='GAME OVER';document.getElementById('overText').textContent='SCORE: '+score;document.getElementById('overlay').classList.add('show')}else{player.x=280;player.y=610}}
+function update(dt){
+if(gameOver)return;shotCooldown-=dt;
+let dx=0,dy=0;if(keys.has('ArrowUp')||keys.has('w'))dy--;if(keys.has('ArrowDown')||keys.has('s'))dy++;if(keys.has('ArrowLeft')||keys.has('a'))dx--;if(keys.has('ArrowRight')||keys.has('d'))dx++;
+if(dx||dy){const l=Math.hypot(dx,dy);dx/=l;dy/=l;const nx=player.x+dx*player.speed*dt,ny=player.y+dy*player.speed*dt;if(!blocked(nx,player.y))player.x=clamp(nx,18,W-18);if(!blocked(player.x,ny))player.y=clamp(ny,18,H-18);if(dx||dy)player.a=Math.atan2(dy,dx)}
+if(keys.has(' ')||keys.has('Enter'))shoot();
+for(const e of enemies){e.t+=dt;const target=Math.atan2(player.y-e.y,player.x-e.x);e.a=target;const d=Math.hypot(player.x-e.x,player.y-e.y);if(d>125){const nx=e.x+Math.cos(target)*55*dt,ny=e.y+Math.sin(target)*55*dt;if(!blocked(nx,ny,15)){e.x=nx;e.y=ny}}if(e.t>1.7){e.t=0;if(d<500)enemyBullets.push({x:e.x+Math.cos(e.a)*25,y:e.y+Math.sin(e.a)*25,vx:Math.cos(e.a)*190,vy:Math.sin(e.a)*190,life:3})}}
+for(const b of bullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt}
+for(const b of enemyBullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt}
+for(let i=bullets.length-1;i>=0;i--){const b=bullets[i];if(b.life<=0||b.x<0||b.x>W||b.y<0||b.y>H||blocked(b.x,b.y,4)){bullets.splice(i,1);continue}for(let j=enemies.length-1;j>=0;j--){const e=enemies[j];if(Math.hypot(b.x-e.x,b.y-e.y)<20){e.hp--;bullets.splice(i,1);if(e.hp<=0){enemies.splice(j,1);score+=100}break}}}
+for(let i=enemyBullets.length-1;i>=0;i--){const b=enemyBullets[i];if(b.life<=0||b.x<0||b.x>W||b.y<0||b.y>H||blocked(b.x,b.y,4)){enemyBullets.splice(i,1);continue}if(Math.hypot(b.x-player.x,b.y-player.y)<19){enemyBullets.splice(i,1);hitPlayer()}}
+if(enemies.length===0){level++;enemies.push({x:505,y:30,a:Math.PI/2,hp:2+level%3,t:0},{x:510,y:545,a:-Math.PI/2,hp:2,t:1},{x:280,y:675,a:-Math.PI/2,hp:3,t:2});score+=500}
+document.getElementById('score').textContent=score;document.getElementById('lives').textContent=lives;document.getElementById('level').textContent=level;document.getElementById('enemies').textContent=enemies.length;
+}
+function render(){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);for(const w of walls)drawWall(w);for(const q of crates)drawCrate(q);ctx.fillStyle='#ddd';ctx.font='bold 42px monospace';ctx.textAlign='center';ctx.fillText('+',W/2,48);for(const b of bullets){ctx.fillStyle='#f5c43a';ctx.fillRect(b.x-3,b.y-3,6,6)}for(const b of enemyBullets){ctx.fillStyle='#ff8b00';ctx.fillRect(b.x-3,b.y-3,6,6)}for(const e of enemies)tank(e,'#dce6e8',true);tank(player,'#e3a72b')}
+function loop(t){const dt=Math.min(.033,(t-last)/1000||.016);last=t;update(dt);render();requestAnimationFrame(loop)}requestAnimationFrame(loop);
+window.addEventListener('keydown',e=>{keys.add(e.key);if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});window.addEventListener('keyup',e=>keys.delete(e.key));
+document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();keys.add(k)});['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,()=>keys.delete(k)))});document.getElementById('fire').addEventListener('pointerdown',e=>{e.preventDefault();shoot()});document.getElementById('restart').addEventListener('click',reset);
+})();
+</script>
+</body>
+</html>
