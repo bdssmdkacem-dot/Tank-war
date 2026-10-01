@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
         root.addView(view, new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
 
-        view.loadUrl("file:///android_asset/diagnostic.html");
+        view.loadUrl("file:///android_asset/index.html");
     }
 
     @Override public void onBackPressed() { }
