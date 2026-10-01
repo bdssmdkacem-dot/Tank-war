@@ -11,6 +11,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.os.Handler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
     private TextView status;
     private WebView view;
+    private final Handler handler = new Handler();
 
     @Override
     public void onCreate(Bundle state) {
@@ -72,6 +74,12 @@ public class MainActivity extends Activity {
         settings.setMediaPlaybackRequiresUserGesture(false);
 
         view.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView v, String url, android.graphics.Bitmap favicon) {
+                status.setVisibility(android.view.View.VISIBLE);
+                status.setText("TANK WAR  |  Page started");
+            }
+
             @Override
             public void onPageFinished(WebView v, String url) {
                 status.setVisibility(android.view.View.VISIBLE);
@@ -128,7 +136,15 @@ public class MainActivity extends Activity {
         root.addView(status, statusParams);
         setContentView(root);
 
+        status.setText("TANK WAR  |  Loading asset...");
         view.loadUrl("file:///android_asset/index.html");
+
+        handler.postDelayed(() -> {
+            if (status.getVisibility() == android.view.View.VISIBLE
+                    && status.getText().toString().contains("Loading")) {
+                status.setText("TANK WAR  |  LOAD TIMEOUT | URL=" + view.getUrl());
+            }
+        }, 5000);
     }
 
     private int dp(int value) {
