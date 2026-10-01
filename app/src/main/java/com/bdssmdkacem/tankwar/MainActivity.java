@@ -11,6 +11,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.os.Handler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -75,6 +76,26 @@ public class MainActivity extends Activity {
 
         view.setWebViewClient(new WebViewClient() {
             @Override
+            public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest request) {
+                if ("file:///android_asset/index.html".equals(request.getUrl().toString())) {
+                    try {
+                        java.io.InputStream input = getAssets().open("index.html");
+                        return new WebResourceResponse(
+                                "text/html",
+                                "UTF-8",
+                                200,
+                                "OK",
+                                null,
+                                input
+                        );
+                    } catch (Exception e) {
+                        runOnUiThread(() -> status.setText("ASSET ERROR | " + e.getClass().getSimpleName() + " | " + e.getMessage()));
+                    }
+                }
+                return super.shouldInterceptRequest(v, request);
+            }
+
+            @Override
             public void onPageStarted(WebView v, String url, android.graphics.Bitmap favicon) {
                 status.setVisibility(android.view.View.VISIBLE);
                 status.setText("TANK WAR  |  Page started");
@@ -136,12 +157,12 @@ public class MainActivity extends Activity {
         root.addView(status, statusParams);
         setContentView(root);
 
-        status.setText("TANK WAR  |  Loading asset...");
+        status.setText("TANK WAR  |  Loading asset via asset interceptor...");
         view.loadUrl("file:///android_asset/index.html");
 
         handler.postDelayed(() -> {
             if (status.getVisibility() == android.view.View.VISIBLE
-                    && status.getText().toString().contains("Loading")) {
+                    && status.getText().toString().contains("Loading asset")) {
                 status.setText("TANK WAR  |  LOAD TIMEOUT | URL=" + view.getUrl());
             }
         }, 5000);
