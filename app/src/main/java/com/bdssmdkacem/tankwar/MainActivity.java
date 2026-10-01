@@ -17,6 +17,8 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         WebView view = new WebView(this);
+        // Software rendering avoids black Canvas output on incompatible Android WebView GPU paths.
+        view.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         view.setBackgroundColor(0xFF777777);
         view.setWebViewClient(new WebViewClient());
         view.setWebChromeClient(new WebChromeClient() {
