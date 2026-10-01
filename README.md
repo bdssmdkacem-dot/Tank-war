@@ -1,26 +1,29 @@
 # Tank War
 
-لعبة Tank War بنمط 2D Pixel Art مستوحاة من تكوين المرجع المرفق، مع تطوير تدريجي للرسومات واللعب.
+لعبة **Tank War** بنمط 2D Pixel Art، مع الحفاظ على تكوين ساحة المعركة وواجهة HUD والتحكم باللمس، وتطوير اللعبة على مراحل.
 
 ## النسخة الحالية
-- Pixel Art محسّن للدبابات والمباني والجدران.
-- حركة الدبابة وإطلاق النار.
-- أعداء يتحركون ويطلقون النار.
-- اصطدامات، نقاط، حياة، مستويات.
-- مؤثرات إطلاق وانفجار Pixel Art.
-- تحكم WASD والأسهم.
-- أزرار لمس للهاتف.
-- Android WebView APK جاهز للبناء عبر GitHub Actions.
+- رسومات Pixel Art أدق للدبابات: مسارات، برج، سبطانة، تفاصيل وإضاءات.
+- جدران مبنية من نمط Brick Pixel Art وصناديق واضحة.
+- **5 خرائط** مختلفة: Iron Yard، Brick Maze، Fortress، Cross Fire، Steel Citadel.
+- **مراحل متدرجة**: عدد الأعداء وقوتهم يزدادان مع التقدم.
+- **3 أسلحة**: Machine Gun سريع، Cannon قوي وبطيء، Rocket عالي الضرر مع انفجار أكبر.
+- أعداء بثلاث فئات وسرعات/نقاط حياة مختلفة.
+- انفجارات Pixel Art متعددة الجسيمات + وميض إطلاق النار.
+- Power-ups للأسلحة.
+- مؤثرات صوتية مولدة داخل المتصفح/Android WebView باستخدام Web Audio، بدون ملفات صوت خارجية في هذه المرحلة.
+- Score / IP / Stage / Enemy HUD.
+- WASD والأسهم + أزرار لمس الهاتف.
+- Android WebView APK عبر GitHub Actions.
+
+## التحكم
+- الحركة: WASD أو الأسهم.
+- إطلاق: Space / Enter أو زر FIRE.
+- اختيار السلاح: 1 / 2 / 3.
+- التقاط Power-up يبدّل السلاح تلقائياً.
 
 ## بناء APK للتجريب
-افتح تبويب Actions في GitHub ثم:
-1. اختر Tank War Android APK.
-2. اضغط Run workflow.
-3. انتظر حتى يصبح البناء Success.
-4. افتح workflow run ثم قسم Artifacts.
-5. حمّل tank-war-debug-apk واستخرج app-debug.apk وثبته على الهاتف.
+افتح **Actions → Tank War Android APK → Run workflow**، وبعد نجاح البناء افتح **Artifacts → tank-war-debug-apk** وحمّل app-debug.apk.
 
-GitHub Actions يحفظ ملفات البناء كـ artifacts بعد انتهاء الـ workflow.
-
-## المرحلة التالية
-تحسين الـ sprites إلى Pixel Art أكثر تفصيلاً، خرائط متعددة، انفجارات متحركة، مؤثرات صوتية، أهداف/علم، Power-ups، شاشة البداية وGame Over، ثم تجهيز Release APK/AAB.
+## الخطوة التالية
+إضافة ملفات مؤثرات صوتية أكثر واقعية، تحسين sprites إلى إطارات Pixel Art متحركة، إضافة أهداف/أعلام ومراحل Boss، ثم تجهيز Release APK/AAB.
