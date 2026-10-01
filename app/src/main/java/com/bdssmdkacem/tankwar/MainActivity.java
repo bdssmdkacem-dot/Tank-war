@@ -5,9 +5,13 @@ import android.os.Bundle;
 import android.graphics.Color;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.WebSettings;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -21,32 +25,62 @@ public class MainActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(45, 127, 43));
 
-        TextView status = new TextView(this);
-        status.setText("TANK WAR\nLoading packaged HTML…");
-        status.setTextColor(Color.WHITE);
-        status.setTextSize(18);
-        status.setGravity(android.view.Gravity.CENTER);
-        root.addView(status, new FrameLayout.LayoutParams(-1, -1));
-
         WebView view = new WebView(this);
         view.setBackgroundColor(Color.WHITE);
-        view.setWebViewClient(new WebViewClient() {
-            @Override public void onPageFinished(WebView v, String url) {
-                status.setVisibility(android.view.View.GONE);
-            }
-            @Override public void onReceivedError(WebView v, int code, String desc, String url) {
-                status.setVisibility(android.view.View.VISIBLE);
-                status.setText("ASSET LOAD ERROR\n" + code + "\n" + desc);
-            }
-        });
+
+        final TextView status = new TextView(this);
+        status.setText("TANK WAR\nLoading game HTML…");
+        status.setTextColor(Color.WHITE);
+        status.setTextSize(17);
+        status.setGravity(android.view.Gravity.CENTER);
+        status.setBackgroundColor(Color.rgb(45, 127, 43));
+        status.setPadding(24, 24, 24, 24);
 
         WebSettings s = view.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setAllowFileAccess(true);
         s.setAllowContentAccess(true);
+        s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        s.setMediaPlaybackRequiresUserGesture(false);
+
+        view.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView v, String url) {
+                status.setText("TANK WAR\nHTML loaded — checking JavaScript…");
+                v.evaluateJavascript(
+                    "(function(){try{return 'readyState='+document.readyState+';canvas='+(!!document.getElementById('c'))+';boot='+(!!document.getElementById('bootError'));}catch(e){return 'EVAL='+e;}})()",
+                    value -> {
+                        status.setText("TANK WAR\n" + value.replace("\\"", """));
+                        v.postDelayed(() -> {
+                            v.evaluateJavascript(
+                                "(function(){return window.__tankWarReady?'GAME READY':'GAME NOT READY';})()",
+                                ready -> {
+                                    if (ready != null && ready.contains("GAME READY")) {
+                                        status.setVisibility(android.view.View.GONE);
+                                    } else {
+                                        status.setText("TANK WAR\n" + ready);
+                                    }
+                                });
+                        }, 1200);
+                    });
+            }
+
+            @Override public void onReceivedError(WebView v, WebResourceRequest req, WebResourceError err) {
+                status.setText("WEBVIEW ERROR\n" + err.getErrorCode() + "\n" + err.getDescription());
+            }
+        });
+
+        view.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onConsoleMessage(ConsoleMessage cm) {
+                String msg = cm.messageLevel() + ": " + cm.message() + " (line " + cm.lineNumber() + ")";
+                status.setText("WEB CONSOLE\n" + msg);
+                return true;
+            }
+        });
 
         root.addView(view, new FrameLayout.LayoutParams(-1, -1));
+        FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(-1, -1);
+        root.addView(status, sp);
         setContentView(root);
 
         view.loadUrl("file:///android_asset/index.html");
